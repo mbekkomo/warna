@@ -55,7 +55,6 @@ function warna.windows_enable_sequence()
     return winapi.SetConsoleMode(winapi.GetStdHandle(-11), 7) ~= 0
 end
 
-
-
-
-
+return function()
+    return warna
+end

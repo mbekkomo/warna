@@ -17,34 +17,30 @@ function warna.windows_enable_sequence()
         end
     end
 
-    if not ok and not on_windows then
+    if (not ok and not on_windows) or
+       (ok and ffi.os ~= "Windows") then
         return false
     end
 
-    if ok and ffi.os ~= "Windows" then
-        return false
-    end
-
-    if not ok and on_windows then end
+    if not ok and on_windows then
         local code
         if _VERSION == "Lua 5.1" then
-            code = os.execute("REG ADD HKCU\CONSOLE /f /v VirtualTerminalLevel /t REG_DWORD /d 1 2>1 1>NUL")
+            code = os.execute("REG ADD HKCU\\CONSOLE /f /v VirtualTerminalLevel /t REG_DWORD /d 1 2>1 1>NUL")
+        else
+            _, _, code = os.execute("REG ADD HKCU\\CONSOLE /f /v VirtualTerminalLevel /t REG_DWORD /d 1 2>1 1>NUL")
         end
-    end
 
-    ffi.cdef(("typedef uint%d_t UINT_PTR;"):format(
-        (ffi.arch == "x86" and 32) or
-        (ffi.arch == "x64" and 64) or
-        error("unable to detect Windows architecture")))
+        return code == 0
+    end
 
     -- stylua: ignore
     ffi.cdef[[
-    /* borrowed from https://github.com/malkia/luajit-winapi/blob/main/ffi/winapi/windows/kernel32.lua */
-    /* common */
+    /* borrowed from https://github.com/malkia/luajit-winapi */
+
+    typedef uintptr_t UINT_PTR;
     typedef int32_t BOOL;
     typedef uint32_t DWORD;
 
-    /* aliases */
     typedef UINT_PTR HANDLE;
     typedef HANDLE WINAPI_FILE_HANDLE;
     typedef DWORD WINAPI_ConsoleModeFlags;

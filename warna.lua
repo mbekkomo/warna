@@ -35,16 +35,16 @@ local function cmd_output(cmd, raw)
     return output
 end
 
---- Patch the Windows ASGR sequences problem.
+--- Patch the Windows SGR sequences problem.
 ---
 --- Requires Windows 10 build after 14393 (Anniversary update) and `ffi` or [`cffi`](https://github.com/q66/cffi-lua) to patch.
 --- If not fallbacks to editing registry.
 ---
 --- For Windows 10 before build 14393 (Anniversary update) or before Windows 10, requires [ANSICON](https://github.com/adoxa/ansicon) to patch.
----@param force_ansicon boolean Force use ANSICON to enable SGR
+---@param skip_registry boolean Skip method where editing registry is necesarry
 ---@return boolean # Wether it successfully enable SGR
 ---@return string # A short message with which method of the function is using
-function warna.windows_enable_sequences(force_ansicon)
+function warna.windows_enable_sequences(skip_registry)
     local ok, ffi = pcall(require, "ffi")
     if not ok and ffi then
         ok, ffi = pcall(require, "cffi")
@@ -57,11 +57,15 @@ function warna.windows_enable_sequences(force_ansicon)
     local _, ver = (cmd_output("ver") or ""):match("(%[Version (.+)%])$")
     local winver, buildver = ver:match("^(%d+%.%d+)%.(%d+)")
 
-    if ver and (tonumber(winver) >= 10 and not buildver >= "14393") or tonumber(winver) < 10 or force_ansicon then
+    if ver and (tonumber(winver) >= 10 and not buildver >= "14393") or tonumber(winver) < 10 then
         return execute_cmd((os.getenv("ANSICON") or "ansicon") .. " -p 2>1 1>NUL") == 0, "ansicon method"
     end
 
     if not ok and on_windows then
+        if skip_registry then
+            return false, "registry method"
+        end
+
         if execute_cmd("reg query HKCU\\CONSOLE /v VirtualTerminalLevel 2>1 1>NUL") == 0 then
             return true, "registry method"
         end

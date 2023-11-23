@@ -1,4 +1,18 @@
-local on_windows = package.config:sub(1, 1) == "\\"
+local ffi_ok, ffi = pcall(require, "ffi")
+if not ffi_ok and ffi then
+    ffi_ok, ffi = pcall(require, "cffi")
+end
+
+local on_windows = (ffi_ok and package.config:sub(1, 1) == "\\") or (ffi_ok and ffi.os ~= "Windows")
+
+local ver, winver, buildver
+if on_windows then
+    local fd = io.popen("ver". "r")
+    
+
+    _, ver = (cmd_output("ver") or ""):match("(%[Version (.+)%])$")
+    winver, buildver = ver:match("^(%d+%.%d+)%.(%d+)")
+end
 
 ---@param cmd string
 ---@return integer
@@ -12,37 +26,37 @@ local function execute_cmd(cmd)
     return code ---@diagnostic disable-line:return-type-mismatch
 end
 
----@param cmd string
----@param raw boolean?
----@return string?
-local function cmd_output(cmd, raw)
-    local fd, err = io.popen(cmd, "r")
-    local output
-    if fd and not err then
-        output = fd:read("*a")
-        fd:close()
-    else
-        return
-    end
-    if raw then
-        return output
-    end
-
-    output = output:gsub("^%s+", ""):gsub("%s+$", "")
-
-    return output
-end
-
 ---@return integer
 local function detect_colors()
+    local term = os.getenv("TERM")
+    local colorterm = os.getenv("COLORTERM")
     local force_color = os.getenv("FORCE_COLOR")
-    if force_color then
-        if force_color:match("
+
+    local min = 0
+
+    if force_color and force_color ~= "" then
+        local level = tonumber(force_color)
+
+        min = level and math.min(3, level) or 1
     end
 
     if os.getenv("NO_COLOR") ~= "" then
         return 0
     end
+
+    if os.getenv("TF_BUILD") and os.getenv("AGENT_NAME") then
+        return 1
+    end
+
+    if term == "dumb" then
+        return min
+    end
+
+    if on_windows and tonumber(winver) >= 10 and buildver > "10586" then
+        return buildver >= "14931" and 3 or 2
+    end
+
+    return min
 end
 
 ---@class warna
@@ -58,23 +72,15 @@ local warna = {}
 ---@return boolean # Wether it successfully enable VT esce sequences
 ---@return string # A short message with which method of the function is using
 function warna.windows_enable_vt(skip_registry)
-    local ok, ffi = pcall(require, "ffi")
-    if not ok and ffi then
-        ok, ffi = pcall(require, "cffi")
-    end
-
-    if not (ok and on_windows) or (ok and ffi.os ~= "Windows") then
+    if not on_windows then
         return false, "not windows"
     end
 
-    local _, ver = (cmd_output("ver") or ""):match("(%[Version (.+)%])$")
-    local winver, buildver = ver:match("^(%d+%.%d+)%.(%d+)")
-
-    if ver and (tonumber(winver) >= 10 and not buildver >= "14393") or tonumber(winver) < 10 then
+    if (tonumber(winver) >= 10 and not buildver >= "14393") or tonumber(winver) < 10 then
         return execute_cmd((os.getenv("ANSICON") or "ansicon") .. " -p 2>1 1>NUL") == 0, "ansicon method"
     end
 
-    if not ok and on_windows then
+    if not ffi_ok and on_windows then
         if skip_registry then
             return false, "registry method"
         end

@@ -1,5 +1,3 @@
-local warna = {}
-
 local on_windows = package.config:sub(1, 1) == "\\"
 
 ---@param cmd string
@@ -35,16 +33,31 @@ local function cmd_output(cmd, raw)
     return output
 end
 
---- Patch the Windows SGR sequences problem.
+---@return integer
+local function detect_colors()
+    local force_color = os.getenv("FORCE_COLOR")
+    if force_color then
+        if force_color:match("
+    end
+
+    if os.getenv("NO_COLOR") ~= "" then
+        return 0
+    end
+end
+
+---@class warna
+local warna = {}
+
+--- Patch the Windows VT escape sequences problem.
 ---
 --- Requires Windows 10 build after 14393 (Anniversary update) and `ffi` or [`cffi`](https://github.com/q66/cffi-lua) to patch.
 --- If not fallbacks to editing registry.
 ---
 --- For Windows 10 before build 14393 (Anniversary update) or before Windows 10, requires [ANSICON](https://github.com/adoxa/ansicon) to patch.
 ---@param skip_registry boolean Skip method where editing registry is necesarry
----@return boolean # Wether it successfully enable SGR
+---@return boolean # Wether it successfully enable VT esce sequences
 ---@return string # A short message with which method of the function is using
-function warna.windows_enable_sequences(skip_registry)
+function warna.windows_enable_vt(skip_registry)
     local ok, ffi = pcall(require, "ffi")
     if not ok and ffi then
         ok, ffi = pcall(require, "cffi")

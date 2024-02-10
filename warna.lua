@@ -1,3 +1,4 @@
+#!/usr/bin/env lua
 ---@class warna
 local warna = {}
 

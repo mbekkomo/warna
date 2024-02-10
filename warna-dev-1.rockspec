@@ -30,4 +30,9 @@ build = {
     modules = {
         ["warna"] = "./warna.lua",
     },
+    install = {
+        bin = {
+            ["warna"] = "./warna.lua"
+        }
+    }
 }

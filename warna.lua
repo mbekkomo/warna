@@ -59,26 +59,16 @@ local function detect_colors()
     end
 
     local no_color = os.getenv("NO_COLOR")
-    if no_color and no_color ~= "" then
-        return 0
-    end
+    if no_color and no_color ~= "" then return 0 end
 
-    if os.getenv("TF_BUILD") and os.getenv("AGENT_NAME") then
-        return 1
-    end
+    if os.getenv("TF_BUILD") and os.getenv("AGENT_NAME") then return 1 end
 
-    if term == "dumb" then
-        return min
-    end
+    if term == "dumb" then return min end
 
-    if on_windows and tonumber(winver) >= 10 and buildver > "10586" then
-        return buildver >= "14931" and 3 or 2
-    end
+    if on_windows and tonumber(winver) >= 10 and buildver > "10586" then return buildver >= "14931" and 3 or 2 end
 
     if os.getenv("CI") then
-        if os.getenv("GITHUB_ACTIONS") or os.getenv("GITEA_ACTIONS") then
-            return 3
-        end
+        if os.getenv("GITHUB_ACTIONS") or os.getenv("GITEA_ACTIONS") then return 3 end
 
         local is_ci = false
         for _, sign in pairs({ "TRAVIS", "CIRCLECI", "APPVEYOR", "GITLAB_CI", "BUILDKITE", "DRONE" }) do
@@ -88,9 +78,7 @@ local function detect_colors()
             end
         end
 
-        if is_ci or os.getenv("CI_NAME") == "codeship" then
-            return 1
-        end
+        if is_ci or os.getenv("CI_NAME") == "codeship" then return 1 end
     end
 
     local teamcity_env = os.getenv("TEAMCITY_VERSION")
@@ -98,13 +86,9 @@ local function detect_colors()
         return (teamcity_env:match("^9%.(0*[1-9]%d*)%.") or teamcity_env:match("%d%d+%.")) and 1 or 0
     end
 
-    if colorterm == "truecolor" then
-        return 3
-    end
+    if colorterm == "truecolor" then return 3 end
 
-    if term == "xterm-kitty" then
-        return 3
-    end
+    if term == "xterm-kitty" then return 3 end
 
     local term_program = os.getenv("TERM_PROGRAM")
     if term_program then
@@ -117,19 +101,13 @@ local function detect_colors()
         end
     end
 
-    if term:match("%-256$") or term:match("%-256color$") then
-        return 2
-    end
+    if term:match("%-256$") or term:match("%-256color$") then return 2 end
 
     for _, pattern in pairs({ "^screen", "^xterm", "^vt100", "^vt220", "^rxvt", "color", "ansi", "cygwin", "linux" }) do
-        if term:match(pattern) then
-            return 1
-        end
+        if term:match(pattern) then return 1 end
     end
 
-    if colorterm then
-        return 1
-    end
+    if colorterm then return 1 end
 
     return min
 end
@@ -143,7 +121,7 @@ local function attributes_to_escsequence(str)
 
         local fn_args = {}
         for arg_attr in (args or ""):gmatch("([^,;]+)") do
-            fn_args[#fn_args+1] = arg_attr
+            fn_args[#fn_args + 1] = arg_attr
         end
 
         local attr_value = warna.attributes[attr]
@@ -210,50 +188,38 @@ warna.attributes = {
 
     ---@type warna.attributes_function
     color256 = function(n)
-        if warna.options.level < 2 then
-            return
-        end
+        if warna.options.level < 2 then return end
 
         return ("\27[38;5;%sm"):format(n)
     end,
     ---@type warna.attributes_function
     rgb = function(r, g, b)
-        if warna.options.level < 3 then
-            return
-        end
+        if warna.options.level < 3 then return end
 
         return ("\27[38;2;%s;%s;%sm"):format(r, g, b)
     end,
     ---@type warna.attributes_function
     hex = function(hex)
-        if warna.options.level < 3 then
-            return
-        end
+        if warna.options.level < 3 then return end
 
         return ("\27[38;2;%d;%d;%dm"):format(hex2rgb(hex))
     end,
 
     ---@type warna.attributes_function
     ["bg-color256"] = function(n)
-        if warna.options.level < 2 then
-            return
-        end
+        if warna.options.level < 2 then return end
 
         return ("\27[48;5;%sm"):format(n)
     end,
     ---@type warna.attributes_function
     ["bg-rgb"] = function(r, g, b)
-        if warna.options.level < 3 then
-            return
-        end
+        if warna.options.level < 3 then return end
 
         return ("\27[48;2;%s;%s;%sm"):format(r, g, b)
     end,
     ---@type warna.attributes_function
     ["bg-hex"] = function(hex)
-        if warna.options.level < 3 then
-            return
-        end
+        if warna.options.level < 3 then return end
 
         return ("\27[48;2;%d;%d;%dm"):format(hex2rgb(hex))
     end,
@@ -262,11 +228,11 @@ warna.attributes = {
 ---@param str string
 ---@param attrs string[]
 ---@return string
---- 
+---
 --- Apply attributes to a string.
 ---
 function warna.raw_apply(str, attrs)
-    return attributes_to_escsequence(table.concat(attrs, " "))..str
+    return attributes_to_escsequence(table.concat(attrs, " ")) .. str
 end
 
 ---@param str string
@@ -300,8 +266,8 @@ function warna.format(fmt)
 end
 
 ---@param skip_registry boolean
----@return boolean 
----@return string 
+---@return boolean
+---@return string
 ---
 --- Patch the Windows VT color sequences problem.
 ---
@@ -311,18 +277,14 @@ end
 --- For Windows 10 before build 14393 (Anniversary update) or before Windows 10, requires [ANSICON](https://github.com/adoxa/ansicon) to patch.
 ---
 function warna.windows_enable_vt(skip_registry)
-    if not on_windows then
-        return false, "not windows"
-    end
+    if not on_windows then return false, "not windows" end
 
     if (tonumber(winver) >= 10 and not buildver >= "14393") or tonumber(winver) < 10 then
         return execute_cmd((os.getenv("ANSICON") or "ansicon") .. " -p 2>1 1>NUL") == 0, "ansicon method"
     end
 
     if not ffi and on_windows then
-        if skip_registry then
-            return false, "registry method"
-        end
+        if skip_registry then return false, "registry method" end
 
         if execute_cmd("reg query HKCU\\CONSOLE /v VirtualTerminalLevel 2>1 1>NUL") == 0 then
             return true, "registry method"
@@ -357,9 +319,11 @@ function warna.windows_enable_vt(skip_registry)
 
     local winapi = ffi.load("kernel32.dll")
 
-    return winapi.SetConsoleMode(winapi.GetStdHandle(-11), 7) ~= 0
-       and winapi.SetConsoleMode(winapi.GetStdHandle(-12), 7) ~= 0,
-           "winapi method"
+    return winapi.SetConsoleMode(winapi.GetStdHandle(-11), 7) ~= 0 and winapi.SetConsoleMode(
+        winapi.GetStdHandle(-12),
+        7
+    ) ~= 0,
+        "winapi method"
 end
 
 if pcall(debug.getlocal, 4, 1) then
@@ -367,7 +331,7 @@ if pcall(debug.getlocal, 4, 1) then
 else
     local len_arg = #arg
     local text = table.remove(arg, 1) or ""
-    local isflag = text:sub(1,1) == "-"
+    local isflag = text:sub(1, 1) == "-"
     local help_flag = isflag and text == "-h"
 
     if help_flag or len_arg == 0 then
@@ -385,12 +349,12 @@ Flags: * -h -- Prints the command usage
     end
 
     if not isflag or isflag and text == "-b" then
-        print(warna.format(warna.apply(text, {table.concat(arg, " ")})))
+        print(warna.format(warna.apply(text, { table.concat(arg, " ") })))
     elseif isflag and text == "-f" then
         print(warna.format(arg[1]))
     elseif isflag and text == "-a" then
         text = table.remove(arg)
-        print(warna.apply(text, {table.concat(arg, " ")}))
+        print(warna.apply(text, { table.concat(arg, " ") }))
     else
         io.stderr:write(("Error: Unknown flag '%s'\n"):format(text))
         os.exit(1)

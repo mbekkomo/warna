@@ -35,7 +35,7 @@ task.genrelease() {
 
 # format
 task.format() {
-  stylua . ./*.rockspec ./config.ld
+  stylua . ./*.rockspec
   while read -r f; do
     shfmt -w "$f"
   done < <(find . -name '*.sh' -not -path 'lua_modules')

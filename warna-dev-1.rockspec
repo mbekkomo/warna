@@ -7,7 +7,7 @@ package = "warna"
 version = (_version or "dev-1")
 
 source = {
-    url = "git+https://github.com/komothecat/warna.git"
+    url = "git+https://github.com/komothecat/warna.git",
 }
 if not _version then
     source.branch = "main"
@@ -22,12 +22,12 @@ description = {
 
     labels = { "commandline" },
     summary = "🎨 Terminal text styling for Lua",
-    details = "Warna is a simple text styling for the terminal. View more on GitHub."
+    details = "Warna is a simple text styling for the terminal. View more on GitHub.",
 }
 
 build = {
     type = "builtin",
     modules = {
         ["warna"] = "./warna.lua",
-    }
+    },
 }

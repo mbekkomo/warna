@@ -1,0 +1,6 @@
+indent_type = "Spaces"
+call_parentheses = "Input"
+collapse_simple_statement = "ConditionalOnly"
+
+[sort_requires]
+enabled = true

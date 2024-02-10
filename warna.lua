@@ -1,3 +1,6 @@
+---@class warna
+local warna = {}
+
 local ffi_ok, ffi = pcall(require, "ffi")
 if not ffi_ok and ffi then
     ffi_ok, ffi = pcall(require, "cffi")
@@ -38,6 +41,7 @@ local function hex2rgb(hex)
     return tonumber("0x" .. hex:sub(1, 2)), tonumber("0x" .. hex:sub(3, 4)), tonumber("0x" .. hex:sub(5, 6))
 end
 
+---@return number
 local function detect_colors()
     local term = os.getenv("TERM")
     local colorterm = os.getenv("COLORTERM")
@@ -56,7 +60,6 @@ local function detect_colors()
 
     local no_color = os.getenv("NO_COLOR")
     if no_color and no_color ~= "" then
-        print("here")
         return 0
     end
 
@@ -131,46 +134,41 @@ local function detect_colors()
     return min
 end
 
-local function parse_attributes(str, str_fmt)
+---@param str string
+---@return string
+local function attributes_to_escsequence(str)
     local buff = ""
+    for str_attr in str:gmatch("([^ ]+)") do
+        local attr, args = str_attr:match("^([^:]+):-([^:]*)$")
 
-    for str_attr in str:gmatch("([^ ]*)") do
-        local n_param = select(2, str_attr:gsub(":", ""))
-        if n_param > 1 then
-            error(
-                ('expected at least 1 attribute param delimeter, got %d at "%s" in "%s"'):format(
-                    n_param,
-                    str_attr,
-                    str_fmt
-                )
-            )
+        local fn_args = {}
+        for arg_attr in (args or ""):gmatch("([^,;]+)") do
+            fn_args[#fn_args+1] = arg_attr
         end
 
-        local 
+        local attr_value = warna.attributes[attr]
+        if type(attr_value) == "function" and warna.options.level > 1 then
+            buff = buff .. (attr_value((unpack or table.unpack)(fn_args)) or "")
+        elseif warna.options.level > 0 then
+            buff = buff .. ("\27[%sm"):format(tostring(attr_value))
+        end
     end
+    return buff
 end
-
-parse_attributes("a::", "a::")
-
----@class warna
-local warna = {}
 
 ---@class warna.options
 warna.options = {
-    --- Specifies the level of color support.
     ---
-    ---  • `0` — Disable color support
-    ---  • `1` — Basic color support (8-16 colors)
-    ---  • `2` — 256 colors support
-    ---  • `3` — Truecolor support (16 million colors)
-    level = 0,
-
-    ---@see warna.windows_enable_vt
-    --- Wether to skip editing registry.
-    skip_registry = true,
+    --- Specifies the level of color support.
+    ---  * `0` — Disable color support
+    ---  * `1` — Basic color support (8-16 colors)
+    ---  * `2` — 256 colors support
+    ---  * `3` — Truecolor support (16 million colors)
+    ---
+    level = detect_colors(),
 }
 
----@alias warna.attributes_function fun(...: string): string, string?
+---@alias warna.attributes_function fun(...: string): string?
 ---@class warna.attributes
 warna.attributes = {
     reset = 0,
@@ -200,24 +198,20 @@ warna.attributes = {
     white = 37,
     default = 39,
 
-    bg_black = 40,
-    bg_red = 41,
-    bg_green = 42,
-    bg_yellow = 43,
-    bg_blue = 44,
-    bg_magenta = 45,
-    bg_cyan = 46,
-    bg_white = 47,
-    bg_default = 49,
+    ["bg-black"] = 40,
+    ["bg-red"] = 41,
+    ["bg-green"] = 42,
+    ["bg-yellow"] = 43,
+    ["bg-blue"] = 44,
+    ["bg-magenta"] = 45,
+    ["bg-cyan"] = 46,
+    ["bg-white"] = 47,
+    ["bg-default"] = 49,
 
     ---@type warna.attributes_function
     color256 = function(n)
         if warna.options.level < 2 then
-            return ""
-        end
-
-        if n:match(numbernt_patt) then
-            return nil, "arg #1: expected number, got non-number"
+            return
         end
 
         return ("\27[38;5;%sm"):format(n)
@@ -225,7 +219,7 @@ warna.attributes = {
     ---@type warna.attributes_function
     rgb = function(r, g, b)
         if warna.options.level < 3 then
-            return ""
+            return
         end
 
         return ("\27[38;2;%s;%s;%sm"):format(r, g, b)
@@ -233,47 +227,89 @@ warna.attributes = {
     ---@type warna.attributes_function
     hex = function(hex)
         if warna.options.level < 3 then
-            return ""
+            return
         end
 
         return ("\27[38;2;%d;%d;%dm"):format(hex2rgb(hex))
     end,
 
     ---@type warna.attributes_function
-    bg_color256 = function(n)
+    ["bg-color256"] = function(n)
         if warna.options.level < 2 then
-            return ""
+            return
         end
 
-        return ("\27[48;5;%sm%s"):format(n)
+        return ("\27[48;5;%sm"):format(n)
     end,
     ---@type warna.attributes_function
-    bg_rgb = function(r, g, b)
+    ["bg-rgb"] = function(r, g, b)
         if warna.options.level < 3 then
-            return ""
+            return
         end
 
         return ("\27[48;2;%s;%s;%sm"):format(r, g, b)
     end,
     ---@type warna.attributes_function
-    bg_hex = function(hex)
+    ["bg-hex"] = function(hex)
         if warna.options.level < 3 then
-            return ""
+            return
         end
 
         return ("\27[48;2;%d;%d;%dm"):format(hex2rgb(hex))
     end,
 }
 
----@param skip_registry boolean Skip method where editing registry is necesarry.
----@return boolean # Wether it successfully enable VT esce sequences.
----@return string # A short message with which method of the function is using.
---- Patch the Windows VT escape sequences problem.
+---@param str string
+---@param attrs string[]
+---@return string
+--- 
+--- Apply attributes to a string.
+---
+function warna.raw_apply(str, attrs)
+    return attributes_to_escsequence(table.concat(attrs, " "))..str
+end
+
+---@param str string
+---@param attrs string[]
+---@return string
+---
+--- Similar to `warna.raw_apply`, except the string has `reset` sequence.
+---
+function warna.apply(str, attrs)
+    return warna.raw_apply(str, attrs) .. "\27[m"
+end
+
+---@param fmt string
+---@return string
+---
+--- Format a string with format attributes.
+---
+function warna.raw_format(fmt)
+    return (fmt:gsub("(%%{(.-)})", function(_, s)
+        return attributes_to_escsequence(s)
+    end))
+end
+
+---@param fmt string
+---@return string
+---
+--- Similar to `warna.raw_format`, except the string has `reset` sequence.
+---
+function warna.format(fmt)
+    return warna.raw_format(fmt) .. "\27[m"
+end
+
+---@param skip_registry boolean
+---@return boolean 
+---@return string 
+---
+--- Patch the Windows VT color sequences problem.
 ---
 --- Requires Windows 10 build after 14393 (Anniversary update) and `ffi` or [`cffi`](https://github.com/q66/cffi-lua) to patch.
 --- If not fallbacks to editing registry.
 ---
 --- For Windows 10 before build 14393 (Anniversary update) or before Windows 10, requires [ANSICON](https://github.com/adoxa/ansicon) to patch.
+---
 function warna.windows_enable_vt(skip_registry)
     if not on_windows then
         return false, "not windows"
@@ -297,7 +333,7 @@ function warna.windows_enable_vt(skip_registry)
 
         return yn:lower() == "y" and execute_cmd(
             "reg add HKCU\\CONSOLE /f /v VirtualTerminalLevel /t REG_DWORD /d 1 2>1 1>NUL"
-        ) == 0 or false,
+        ) == 0,
             "registry method"
     end
 
@@ -321,31 +357,42 @@ function warna.windows_enable_vt(skip_registry)
 
     local winapi = ffi.load("kernel32.dll")
 
-    return winapi.SetConsoleMode(winapi.GetStdHandle(-11), 7) ~= 0 and winapi.SetConsoleMode(
-        winapi.GetStdHandle(-12),
-        7
-    ) ~= 0,
-        "winapi method"
+    return winapi.SetConsoleMode(winapi.GetStdHandle(-11), 7) ~= 0
+       and winapi.SetConsoleMode(winapi.GetStdHandle(-12), 7) ~= 0,
+           "winapi method"
 end
 
 if pcall(debug.getlocal, 4, 1) then
-    ---@param options warna.options?
-    ---@return warna
-    --- Initialize Warna module.
-    return function(options)
-        options = options or {}
-        warna.options = options
-
-        warna.windows_enable_vt(warna.options.skip_registry)
-
-        warna.options.level = options.level or detect_colors()
-
-        return warna
-    end
+    return warna
 else
-    assert(#arg > 0, "expected at least 1 arg")
+    local len_arg = #arg
+    local text = table.remove(arg, 1) or ""
+    local isflag = text:sub(1,1) == "-"
+    local help_flag = isflag and text == "-h"
 
-    local format = table.remove(arg, 1)
+    if help_flag or len_arg == 0 then
+        print(([[
+Usage: %s <fmt|text> [<attributes>]
+       %s -b <fmt|text> [<attributes>]
+       %s -f <fmt>
+       %s -a <text> [<attributes>]
 
-    io.write(warna.apply(warna.format(format), arg))
+Flags: * -h -- Prints the command usage
+       * -b -- Both format the format attributes and apply attributes to a text (Default if no flag supplied)
+       * -f -- Format text with the format attributes
+       * -a -- Apply a text with attributes]]):format(arg[0], arg[0], arg[0], arg[0]))
+        os.exit(help_flag and 0 or 1)
+    end
+
+    if not isflag or isflag and text == "-b" then
+        print(warna.format(warna.apply(text, {table.concat(arg, " ")})))
+    elseif isflag and text == "-f" then
+        print(warna.format(arg[1]))
+    elseif isflag and text == "-a" then
+        text = table.remove(arg)
+        print(warna.apply(text, {table.concat(arg, " ")}))
+    else
+        io.stderr:write(("Error: Unknown flag '%s'\n"):format(text))
+        os.exit(1)
+    end
 end

@@ -350,6 +350,7 @@ Flags: * -h -- Prints the command usage
     end
 
     if not isflag or isflag and text == "-b" then
+        text = isflag and table.remove(arg, 1) or text
         print(warna.format(warna.apply(text, { table.concat(arg, " ") })))
     elseif isflag and text == "-f" then
         print(warna.format(arg[1]))

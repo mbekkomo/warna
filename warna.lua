@@ -353,7 +353,7 @@ Flags: * -h -- Prints the command usage
     elseif isflag and text == "-f" then
         print(warna.format(arg[1]))
     elseif isflag and text == "-a" then
-        text = table.remove(arg)
+        text = table.remove(arg, 1)
         print(warna.apply(text, { table.concat(arg, " ") }))
     else
         io.stderr:write(("Error: Unknown flag '%s'\n"):format(text))

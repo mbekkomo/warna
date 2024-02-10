@@ -125,10 +125,10 @@ local function attributes_to_escsequence(str)
             fn_args[#fn_args + 1] = arg_attr
         end
 
-        local attr_value = warna.attributes[attr]
-        if type(attr_value) == "function" and warna.options.level > 1 then
+        local attr_value = warna.options.level > 0 and (warna.attributes[attr] or warna.attributes.colors[attr]) or warna.attributes[attr]
+        if type(attr_value) == "function" then
             buff = buff .. (attr_value((unpack or table.unpack)(fn_args)) or "")
-        elseif warna.options.level > 0 then
+        elseif attr_value then
             buff = buff .. ("\27[%sm"):format(tostring(attr_value))
         end
     end
@@ -167,63 +167,65 @@ warna.attributes = {
     strikethrough = 9,
     strike = 9,
 
-    black = 30,
-    red = 31,
-    green = 32,
-    yellow = 33,
-    blue = 34,
-    magenta = 35,
-    cyan = 36,
-    white = 37,
-    default = 39,
+    colors = {
+        black = 30,
+        red = 31,
+        green = 32,
+        yellow = 33,
+        blue = 34,
+        magenta = 35,
+        cyan = 36,
+        white = 37,
+        default = 39,
 
-    ["bg-black"] = 40,
-    ["bg-red"] = 41,
-    ["bg-green"] = 42,
-    ["bg-yellow"] = 43,
-    ["bg-blue"] = 44,
-    ["bg-magenta"] = 45,
-    ["bg-cyan"] = 46,
-    ["bg-white"] = 47,
-    ["bg-default"] = 49,
+        ["bg-black"] = 40,
+        ["bg-red"] = 41,
+        ["bg-green"] = 42,
+        ["bg-yellow"] = 43,
+        ["bg-blue"] = 44,
+        ["bg-magenta"] = 45,
+        ["bg-cyan"] = 46,
+        ["bg-white"] = 47,
+        ["bg-default"] = 49,
 
-    ---@type warna.attributes_function
-    color256 = function(n)
-        if warna.options.level < 2 then return end
+        ---@type warna.attributes_function
+        color256 = function(n)
+            if warna.options.level < 2 then return end
 
-        return ("\27[38;5;%sm"):format(n)
-    end,
-    ---@type warna.attributes_function
-    rgb = function(r, g, b)
-        if warna.options.level < 3 then return end
+            return ("\27[38;5;%sm"):format(n)
+        end,
+        ---@type warna.attributes_function
+        rgb = function(r, g, b)
+            if warna.options.level < 3 then return end
 
-        return ("\27[38;2;%s;%s;%sm"):format(r, g, b)
-    end,
-    ---@type warna.attributes_function
-    hex = function(hex)
-        if warna.options.level < 3 then return end
+            return ("\27[38;2;%s;%s;%sm"):format(r, g, b)
+        end,
+        ---@type warna.attributes_function
+        hex = function(hex)
+            if warna.options.level < 3 then return end
 
-        return ("\27[38;2;%d;%d;%dm"):format(hex2rgb(hex))
-    end,
+            return ("\27[38;2;%d;%d;%dm"):format(hex2rgb(hex))
+        end,
 
-    ---@type warna.attributes_function
-    ["bg-color256"] = function(n)
-        if warna.options.level < 2 then return end
+        ---@type warna.attributes_function
+        ["bg-color256"] = function(n)
+            if warna.options.level < 2 then return end
 
-        return ("\27[48;5;%sm"):format(n)
-    end,
-    ---@type warna.attributes_function
-    ["bg-rgb"] = function(r, g, b)
-        if warna.options.level < 3 then return end
+            return ("\27[48;5;%sm"):format(n)
+        end,
+        ---@type warna.attributes_function
+        ["bg-rgb"] = function(r, g, b)
+            if warna.options.level < 3 then return end
 
-        return ("\27[48;2;%s;%s;%sm"):format(r, g, b)
-    end,
-    ---@type warna.attributes_function
-    ["bg-hex"] = function(hex)
-        if warna.options.level < 3 then return end
+            return ("\27[48;2;%s;%s;%sm"):format(r, g, b)
+        end,
+        ---@type warna.attributes_function
+        ["bg-hex"] = function(hex)
+            if warna.options.level < 3 then return end
 
-        return ("\27[48;2;%d;%d;%dm"):format(hex2rgb(hex))
-    end,
+            return ("\27[48;2;%d;%d;%dm"):format(hex2rgb(hex))
+        end,
+    }
 }
 
 ---@param str string
@@ -272,7 +274,7 @@ end
 ---
 --- Patch the Windows VT color sequences problem.
 ---
---- Requires Windows 10 build after 14393 (Anniversary update) and `ffi` or [`cffi`](https://github.com/q66/cffi-lua) to patch.
+--- Requires Windows 10 build after 14393 (Anniversary update) and `ffi` or [`cffi`](https://github.com/q66/cffi-lua) library to patch.
 --- If not fallbacks to editing registry.
 ---
 --- For Windows 10 before build 14393 (Anniversary update) or before Windows 10, requires [ANSICON](https://github.com/adoxa/ansicon) to patch.
@@ -343,9 +345,9 @@ Usage: %s <fmt|text> [<attributes>]
        %s -a <text> [<attributes>]
 
 Flags: * -h -- Prints the command usage
-       * -b -- Both format the format attributes and apply attributes to a text (Default if no flag supplied)
-       * -f -- Format text with the format attributes
-       * -a -- Apply a text with attributes]]):format(arg[0], arg[0], arg[0], arg[0]))
+       * -b -- Both format the text and apply attributes to the text (Default if a flag isn't supplied)
+       * -f -- Format the text
+       * -a -- Apply the text with attributes]]):format(arg[0], arg[0], arg[0], arg[0]))
         os.exit(help_flag and 0 or 1)
     end
 

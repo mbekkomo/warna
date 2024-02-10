@@ -25,6 +25,10 @@ description = {
     details = "Warna is a simple text styling for the terminal. View more on GitHub.",
 }
 
+dependencies = {
+    "lua >= 5.1",
+}
+
 build = {
     type = "builtin",
     modules = {

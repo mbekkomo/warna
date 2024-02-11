@@ -362,12 +362,12 @@ Accepts NO_COLOR and FORCE_COLOR to manipulate color support.]]):format(prog, pr
 
     if not isflag or isflag and text == "-b" then
         text = isflag and table.remove(arg, 1) or text
-        print(warna.format(warna.apply(text, { table.concat(arg, " ") })))
+        io.stdout:write(warna.format(warna.apply(text, { table.concat(arg, " ") })))
     elseif isflag and text == "-f" then
-        print(warna.format(arg[1]))
+        io.stdout:write(warna.format(arg[1]))
     elseif isflag and text == "-a" then
         text = table.remove(arg, 1)
-        print(warna.apply(text, { table.concat(arg, " ") }))
+        io.stdout:write(warna.apply(text, { table.concat(arg, " ") }))
     else
         io.stderr:write(("Error: Unknown flag '%s'\n"):format(text))
         os.exit(1)

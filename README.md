@@ -51,7 +51,7 @@ Copy `warna.lua` from repository tree to the path where Lua can find and require
 
 - Fields:
   - `[string]: function(string...): string?|string|number`: For attributes that requires `options.level >= 0`
-  - `color[string]: function(string...): string?|string|number`: For attributes that requires `options.level >= 1`
+  - `colors[string]: function(string...): string?|string|number`: For attributes that requires `options.level >= 1`
     - `function(string...): string?` If the attribute accepts attribute parameters (implying the `string...`) or it's dynamic attribute and returns an escape sequence.
     - `string|number` If the attribute is static, the value of the field is automatically `tostring`'ed.
 

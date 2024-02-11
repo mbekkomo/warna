@@ -36,7 +36,7 @@ build = {
     },
     install = {
         bin = {
-            ["warna"] = "./warna.lua",
+            ["warna.lua"] = "./warna.lua",
         },
     },
 }

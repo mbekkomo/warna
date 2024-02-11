@@ -23,9 +23,9 @@ task.genrelease() {
     *) bake.die "expected 'revision', 'patch', 'minor', 'major'. got '$type'" ;;
   esac
 
-  rockspec="$(< ./lpresence-dev-1.rockspec)"
+  rockspec="$(< ./warna-dev-1.rockspec)"
   rockspec="${rockspec//local _version/local _version = \"$version_next\"}"
-  echo "$rockspec" > "lpresence-$version_next.rockspec"
+  echo "$rockspec" > "warna-$version_next.rockspec"
 
   git tag -a "v$version_next" -m "Release: v$version_next"
 

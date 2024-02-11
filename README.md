@@ -5,7 +5,7 @@
 [![LuaRocks](https://img.shields.io/luarocks/v/UrNightmaree/warna?style=for-the-badge&logo=lua&color=blue)](https://luarocks.org/modules/UrNightmaree/warna)
 
 
-🎨 Terminal text styling for Lua
+🎨 Terminal text styling library for Lua
 
 ## Installation
 

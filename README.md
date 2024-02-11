@@ -1,8 +1,8 @@
 # Warna 
 
-[![GitHub License](https://img.shields.io/github/license/komothecat/warna?style=for-the-badge)](./LICENSE) [![GitHub Release](https://img.shields.io/github/v/release/komothecat/warna?style=for-the-badge)](https://github.com/komothecat/warna/releases/latest)<br>
+[![GitHub License](https://img.shields.io/github/license/komothecat/warna?style=for-the-badge)](./LICENSE) [![GitHub Release](https://img.shields.io/github/v/release/komothecat/warna?display_name=release&style=for-the-badge&color=green)](https://github.com/komothecat/warna/releases/latest)<br>
 ![Lua](https://img.shields.io/badge/Lua-5.1_--_5.4%2C_LuaJIT-blue?style=for-the-badge&logo=lua&logoColor=lua)
-[![LuaRocks](https://img.shields.io/luarocks/v/UrNightmaree/warna?style=for-the-badge&logo=lua&logoColor=lua)](https://luarocks.org/modules/UrNightmaree/warna)
+[![LuaRocks](https://img.shields.io/luarocks/v/UrNightmaree/warna?style=for-the-badge&logo=lua&color=blue)](https://luarocks.org/modules/UrNightmaree/warna)
 
 
 🎨 Terminal text styling for Lua
@@ -33,10 +33,10 @@ Copy `warna.lua` from repository tree to the path where Lua can find and require
 - Fields:
   - `level: integer`: Specifies the level of color support.
     * `-1` — Disable escape sequences completely.
-    * `0`  — Disable color support
-    * `1`  — Basic color support (8-16 colors)
-    * `2`  — 256 colors support
-    * `3`  — Truecolor support (16 million colors)<br>
+    * `0`  — Disable color support.
+    * `1`  — Basic color support. (8-16 colors)
+    * `2`  — 256 colors support.
+    * `3`  — Truecolor support. (16 million colors)<br>
 
     By default, the field value is automatically detected.<br>
     Can be overridden by setting [`NO_COLOR`](http://no-color.org) environment variable, [`FORCE_COLOR`](https://force-color.org) environment variable, or directly setting the field itself.

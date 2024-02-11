@@ -1,6 +1,6 @@
 # Warna 
 
-[![GitHub License](https://img.shields.io/github/license/komothecat/warna?style=for-the-badge)](./LICENSE) [![GitHub Release](https://img.shields.io/github/v/release/komothecat/warna?style=for-the-badge)](/komothecat/warna/releases/latest)<br>
+[![GitHub License](https://img.shields.io/github/license/komothecat/warna?style=for-the-badge)](./LICENSE) [![GitHub Release](https://img.shields.io/github/v/release/komothecat/warna?style=for-the-badge)](https://github.com/komothecat/warna/releases/latest)<br>
 ![Lua](https://img.shields.io/badge/Lua-5.1_--_5.4%2C_LuaJIT-blue?style=for-the-badge&logo=lua&logoColor=lua)
 [![LuaRocks](https://img.shields.io/luarocks/v/UrNightmaree/warna?style=for-the-badge&logo=lua&logoColor=lua)](https://luarocks.org/modules/UrNightmaree/warna)
 

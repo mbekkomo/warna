@@ -127,9 +127,8 @@ local function attributes_to_escsequence(str)
             fn_args[#fn_args + 1] = arg_attr
         end
 
-        local attr_value =
-            warna.options.level == 0 and warna.attributes[attr]
-         or warna.options.level > 0 and (warna.attributes.colors[attr] or warna.attributes[attr])
+        local attr_value = warna.options.level == 0 and warna.attributes[attr]
+            or warna.options.level > 0 and (warna.attributes.colors[attr] or warna.attributes[attr])
         local type_attr_value = type(attr_value)
         if type_attr_value == "function" then
             buff = buff .. (attr_value(tbl_unpack(fn_args)) or "")
@@ -231,7 +230,7 @@ warna.attributes = {
 
             return ("\27[48;2;%d;%d;%dm"):format(hex2rgb(hex))
         end,
-    }
+    },
 }
 
 ---@param str string

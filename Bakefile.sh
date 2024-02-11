@@ -23,6 +23,8 @@ task.genrelease() {
     *) bake.die "expected 'revision', 'patch', 'minor', 'major'. got '$type'" ;;
   esac
 
+  ./luarocks lint ./warna-dev-1.rockspec
+
   rockspec="$(< ./warna-dev-1.rockspec)"
   rockspec="${rockspec//local _version/local _version = \"$version_next\"}"
   echo "$rockspec" > "warna-$version_next.rockspec"

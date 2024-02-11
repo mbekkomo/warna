@@ -22,7 +22,7 @@ description = {
 
     labels = { "commandline" },
     summary = "🎨 Terminal text styling for Lua",
-    details = "Warna is a simple text styling for the terminal. View more on GitHub.",
+    detailed = "Warna is a simple text styling for the terminal. View more on GitHub.",
 }
 
 dependencies = {

@@ -20,6 +20,8 @@ if on_windows then
     end
 end
 
+local tbl_unpack = (unpack or table.unpack)
+
 ---@param cmd string
 ---@return integer
 local function execute_cmd(cmd)
@@ -56,7 +58,7 @@ local function detect_colors()
     if force_color and force_color ~= "" then
         local level = tonumber(force_color)
 
-        min = level and math.min(3, level) or 1
+        return level and math.min(3, level) or 1
     end
 
     local no_color = os.getenv("NO_COLOR")
@@ -125,10 +127,13 @@ local function attributes_to_escsequence(str)
             fn_args[#fn_args + 1] = arg_attr
         end
 
-        local attr_value = warna.options.level > 0 and (warna.attributes[attr] or warna.attributes.colors[attr]) or warna.attributes[attr]
-        if type(attr_value) == "function" then
-            buff = buff .. (attr_value((unpack or table.unpack)(fn_args)) or "")
-        elseif attr_value then
+        local attr_value =
+            warna.options.level == 0 and warna.attributes[attr]
+         or warna.options.level > 0 and (warna.attributes.colors[attr] or warna.attributes[attr])
+        local type_attr_value = type(attr_value)
+        if type_attr_value == "function" then
+            buff = buff .. (attr_value(tbl_unpack(fn_args)) or "")
+        elseif attr_value and type_attr_value ~= "table" then
             buff = buff .. ("\27[%sm"):format(tostring(attr_value))
         end
     end
@@ -139,10 +144,11 @@ end
 warna.options = {
     ---
     --- Specifies the level of color support.
-    ---  * `0` — Disable color support
-    ---  * `1` — Basic color support (8-16 colors)
-    ---  * `2` — 256 colors support
-    ---  * `3` — Truecolor support (16 million colors)
+    ---  * `-1` — Disable escape sequences completely.
+    ---  * `0`  — Disable color support
+    ---  * `1`  — Basic color support (8-16 colors)
+    ---  * `2`  — 256 colors support
+    ---  * `3`  — Truecolor support (16 million colors)
     ---
     level = detect_colors(),
 }
@@ -338,16 +344,20 @@ else
     local help_flag = isflag and text == "-h"
 
     if help_flag or len_arg == 0 then
+        local prog = arg[0]
         print(([[
-Usage: %s <fmt|text> [<attributes>]
-       %s -b <fmt|text> [<attributes>]
+Usage: %s <flag>
+       %s <fmt|text> [<attributes...>]
+       %s -b <fmt|text> [<attributes...>]
        %s -f <fmt>
-       %s -a <text> [<attributes>]
+       %s -a <text> [<attributes...>]
 
 Flags: * -h -- Prints the command usage
        * -b -- Both format the text and apply attributes to the text (Default if a flag isn't supplied)
        * -f -- Format the text
-       * -a -- Apply the text with attributes]]):format(arg[0], arg[0], arg[0], arg[0]))
+       * -a -- Apply the text with attributes
+
+Accepts NO_COLOR and FORCE_COLOR to manipulate color support.]]):format(prog, prog, prog, prog, prog))
         os.exit(help_flag and 0 or 1)
     end
 

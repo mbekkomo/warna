@@ -1,9 +1,9 @@
-# warna [![GitHub License](https://img.shields.io/github/license/komothecat/warna?style=for-the-badge)](./LICENSE) [![GitHub Release](https://img.shields.io/github/v/release/komothecat/warna?style=for-the-badge)](/komothecat/warna/releases/latest)
+# Warna 
 
+[![GitHub License](https://img.shields.io/github/license/komothecat/warna?style=for-the-badge)](./LICENSE) [![GitHub Release](https://img.shields.io/github/v/release/komothecat/warna?style=for-the-badge)](/komothecat/warna/releases/latest)<br>
 ![Lua](https://img.shields.io/badge/Lua-5.1_--_5.4%2C_LuaJIT-blue?style=for-the-badge&logo=lua&logoColor=lua)
 [![LuaRocks](https://img.shields.io/luarocks/v/UrNightmaree/warna?style=for-the-badge&logo=lua&logoColor=lua)](https://luarocks.org/modules/UrNightmaree/warna)
 
-<br>
 
 🎨 Terminal text styling for Lua
 
@@ -32,10 +32,11 @@ Copy `warna.lua` from repository tree to the path where Lua can find and require
 
 - Fields:
   - `level: integer`: Specifies the level of color support.
-    * `0` — Disable color support
-    * `1` — Basic color support (8-16 colors)
-    * `2` — 256 colors support
-    * `3` — Truecolor support (16 million colors)<br>
+    * `-1` — Disable escape sequences completely.
+    * `0`  — Disable color support
+    * `1`  — Basic color support (8-16 colors)
+    * `2`  — 256 colors support
+    * `3`  — Truecolor support (16 million colors)<br>
 
     By default, the field value is automatically detected.<br>
     Can be overridden by setting [`NO_COLOR`](http://no-color.org) environment variable, [`FORCE_COLOR`](https://force-color.org) environment variable, or directly setting the field itself.
@@ -43,17 +44,18 @@ Copy `warna.lua` from repository tree to the path where Lua can find and require
 ### `attributes`
 ```lua
 {
-    color = { [string]: function(string...): string?|any }
-    [string]: any
+    colors = { [string]: function(string...): string?|string|number },
+    [string]: string|number
 }
 ```
 
 - Fields:
-  - `[string]: function(string...): string?|any`:
+  - `[string]: function(string...): string?|string|number`: For attributes that requires `options.level >= 0`
+  - `color[string]: function(string...): string?|string|number`: For attributes that requires `options.level >= 1`
     - `function(string...): string?` If the attribute accepts attribute parameters (implying the `string...`) or it's dynamic attribute and returns an escape sequence.
-    - `any` If the attribute is static, the value of the field is automatically `tostring`'ed.
+    - `string|number` If the attribute is static, the value of the field is automatically `tostring`'ed.
 
-All fields in `attributes` are documented in the [list attributes](#list-attributes) section.
+All fields in `attributes` are documented in the [list of attributes](#list-of-attributes) section.
 
 ### `windows_enable_vt`
 
@@ -76,7 +78,7 @@ For Windows 10 before build 14393 (Anniversary update) or before Windows 10, req
 
 ### `raw_apply`
 
-> ![NOTE]
+> [!NOTE]
 >
 > This function does not resets it's escape sequence, implying it's a "raw" function.
 
@@ -108,7 +110,7 @@ Similar to [`raw_apply`](#raw_apply), except it resets the escape sequence.
 
 ### `raw_format`
 
-> ![NOTE]
+> [!NOTE]
 >
 > This function does not resets it's escape sequence, implying it's a "raw" function.
 
@@ -141,15 +143,18 @@ Similar to [`raw_format`](#raw_format), except it resets the escape sequence.
 You can also run the `warna.lua` as CLI, which acts as a helper for styling text in shell script.
 
 ```
-Usage: warna.lua <fmt|text> [<attributes>]
-       warna.lua -b <fmt|text> [<attributes>]
+Usage: warna.lua <flag>
+       warna.lua <fmt|text> [<attributes...>]
+       warna.lua -b <fmt|text> [<attributes...>]
        warna.lua -f <fmt>
-       warna.lua -a <text> [<attributes>]
+       warna.lua -a <text> [<attributes...>]
 
 Flags: * -h -- Prints the command usage
        * -b -- Both format the text and apply attributes to the text (Default if a flag isn't supplied)
        * -f -- Format the text
        * -a -- Apply the text with attributes
+
+Accepts NO_COLOR and FORCE_COLOR to manipulate color support.
 ```
 
 ## Attributes
@@ -165,13 +170,13 @@ The format specifier is similar to [`ansicolors.lua`](https://github.com/kikito/
 
 The syntax of an attribute looks like this.
 ```
-<specifier>[:<arg>[(,|;)<arg>...]]
+<specifier>[:<arg>[<(,|;)arg...>]]
 ```
 
-### List attributes
+### List of attributes
 
-
-- Basic attributes
+- Basic attributes <br>
+  Enabled by default, i.e only enabled if `options.level >= 0`.
   - `reset`
   - `bright` or `bold`
   - `dim` or `dark`
@@ -182,7 +187,16 @@ The syntax of an attribute looks like this.
   - `hidden` or `invisible`
   - `strikethrough` or `strike`
 
-- Color attributes
+> [!NOTE]
+>
+> To use background colors, prepend the `specifier` with `bg-`.
+> For example:
+>   - `bg-red` to set the text background with red color.
+>   - `bg-color256:93` to set the text background with 256 color code `093` or `#8700ff`.
+>   - `bg-hex:#1e1e2e` to set the text background with hex color code `#1e1e2e`.
+
+- Color attributes<br>
+  Only enabled if `options.level >= 1`.
   - `black`
   - `red`
   - `green`
@@ -192,9 +206,12 @@ The syntax of an attribute looks like this.
   - `cyan`
   - `white`
   - `default`
-  - `color`
 
-- More color attributes
-  - `color256:(ncolor)`
-  - `rgb:(r),(g),(b)`
-  - `hex:(hex)`
+- More color attributes<br>
+  Certain color attributes only enabled if `options.level >= 2` or `options.level >= 3`.
+  - `color256:(ncolor)` (Only enabled if `options.level >= 2`)
+    - `ncolor`: The [Xterm 256 colors](https://upload.wikimedia.org/wikipedia/commons/1/15/Xterm_256color_chart.svg).
+  - `rgb:(r),(g),(b)` (Only enabled if `options.level >= 3`)
+    - `r`,`g`,`b`: RGB code.
+  - `hex:(hex)` (Only enabled if `options.level >= 3`)
+    - `hex`: Hex color code.

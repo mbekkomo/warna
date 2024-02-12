@@ -273,7 +273,7 @@ function warna.format(fmt)
     return warna.raw_format(fmt) .. "\27[m"
 end
 
----@param skip_registry boolean
+---@param skip_registry boolean?
 ---@return boolean
 ---@return string
 ---
@@ -343,7 +343,7 @@ else
     local help_flag = isflag and text == "-h"
 
     if help_flag or len_arg == 0 then
-        local prog = arg[0]
+        local prog = arg[0]:gsub(".-/", "")
         print(([[
 Usage: %s <flag>
        %s <fmt|text> [<attributes...>]
@@ -359,6 +359,8 @@ Flags: * -h -- Prints the command usage
 Accepts NO_COLOR and FORCE_COLOR to manipulate color support.]]):format(prog, prog, prog, prog, prog))
         os.exit(help_flag and 0 or 1)
     end
+
+    warna.windows_enable_vt()
 
     if not isflag or isflag and text == "-b" then
         text = isflag and table.remove(arg, 1) or text

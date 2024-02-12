@@ -45,7 +45,7 @@ Copy `warna.lua` from repository tree to the path where Lua can find and require
 ```lua
 {
     colors = { [string]: function(string...): string?|string|number },
-    [string]: string|number
+    [string]: function(string...): string?|string|number
 }
 ```
 

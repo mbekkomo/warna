@@ -182,6 +182,8 @@ The format specifier is similar to [`ansicolors.lua`](https://github.com/kikito/
 %{ [<attributes>] }
 ```
 
+You can escape the format by adding another `%` before the format.
+
 ### Attribute syntax
 
 The syntax of an attribute looks like this.

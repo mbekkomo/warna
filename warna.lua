@@ -39,6 +39,7 @@ end
 ---@return number
 ---@return number
 local function hex2rgb(hex)
+    if not hex:match("^#?%x%x%x%x%x%x$") then error(hex .. " is not a hex!") end
     hex = hex:gsub("^#", "")
     ---@diagnostic disable-next-line:return-type-mismatch
     return tonumber("0x" .. hex:sub(1, 2)), tonumber("0x" .. hex:sub(3, 4)), tonumber("0x" .. hex:sub(5, 6))
@@ -247,7 +248,7 @@ end
 ---@param attrs string[]
 ---@return string
 ---
---- Similar to `warna.raw_apply`, except the string has `reset` sequence.
+--- Similar to `warna.raw_apply`, except the string has `reset` attribute appended.
 ---
 function warna.apply(str, attrs)
     return warna.raw_apply(str, attrs) .. "\27[m"
@@ -267,24 +268,33 @@ end
 ---@param fmt string
 ---@return string
 ---
---- Similar to `warna.raw_format`, except the string has `reset` sequence.
+--- Similar to `warna.raw_format`, except the string has `reset` attribute appended.
 ---
 function warna.format(fmt)
     return warna.raw_format(fmt) .. "\27[m"
+end
+
+---@param str any
+---@return unknown
+---
+--- Strip a string containing escape sequences (`ESC[...m`).
+---
+function warna.strip_escapes(str)
+    return (str:gsub("\27%[.-m", ""))
 end
 
 ---@param skip_registry boolean?
 ---@return boolean
 ---@return string
 ---
---- Patch the Windows VT color sequences problem.
+--- Patch the Windows VTE problem.
 ---
 --- Requires Windows 10 build after 14393 (Anniversary update) and `ffi` or [`cffi`](https://github.com/q66/cffi-lua) library to patch.
 --- If not fallbacks to editing registry.
 ---
 --- For Windows 10 before build 14393 (Anniversary update) or before Windows 10, requires [ANSICON](https://github.com/adoxa/ansicon) to patch.
 ---
-function warna.windows_enable_vt(skip_registry)
+function warna.windows_patch_vte(skip_registry)
     if not on_windows then return false, "not windows" end
 
     if (tonumber(winver) >= 10 and not buildver >= "14393") or tonumber(winver) < 10 then
@@ -336,22 +346,21 @@ end
 
 if pcall(debug.getlocal, 4, 1) then
     return warna
-end
+else
+    local len_arg = #arg
+    local text = table.remove(arg, 1) or ""
+    local flags = ""
+    if text:sub(1, 1) == "-" and text:find("[hbfar]", 1) then
+        flags = text:sub(2)
+    elseif text:sub(1, 1) == "-" and text:find("[^-hbfar]", 1) then
+        io.stderr:write(("Error: Unknown flag '-%s'\n"):format(text:match("[^-hbfar]")))
+        os.exit(1)
+    end
 
-local len_arg = #arg
-local text = table.remove(arg, 1) or ""
-local flags = ""
-if text:sub(1, 1) == "-" and text:find("[hbfar]", 1) then
-    flags = text:sub(2)
-elseif text:sub(1, 1) == "-" and text:find("[^-hbfar]", 1) then
-    io.stderr:write(("Error: Unknown flag '-%s'\n"):format(text:match("[^-hbfar]")))
-    os.exit(1)
-end
-
-local help_flag = flags:find("h", 1)
-if help_flag or len_arg == 0 then
-    local prog = arg[0]:gsub(".-/", "")
-    print((([[
+    local help_flag = flags:find("h", 1)
+    if help_flag or len_arg == 0 then
+        local prog = arg[0]:gsub(".-/", "")
+        print((([[
 Usage: %s <flags>
        %s <fmt|text> [<attributes...>]
        %s -b <fmt|text> [<attributes...>]
@@ -367,22 +376,23 @@ Flags: * -h -- Prints the command usage
 <flags> can be stack up as many as you want. e.g `-ar 'My Text' red`.
 
 Accepts NO_COLOR and FORCE_COLOR to manipulate color support.]]):gsub("%%s", prog)))
-    os.exit(help_flag and 0 or 1)
-end
+        os.exit(help_flag and 0 or 1)
+    end
 
-if flags ~= "" and #arg == 0 then
-    io.stderr:write("Error: Cannot process a flag, at least supply an input!\n")
-    os.exit(1)
-end
+    if flags ~= "" and #arg == 0 then
+        io.stderr:write("Error: Cannot process a flag, at least supply an input!\n")
+        os.exit(1)
+    end
 
-warna.windows_enable_vt(not flags:find("r", 1) ~= nil)
+    warna.windows_patch_vte(flags:find("r", 1) == nil)
 
-if flags == "" or flags:find("b", 1) then
-    text = flags ~= "" and table.remove(arg, 1) or text
-    io.stdout:write(warna.format(warna.apply(text, { table.concat(arg, " ") })))
-elseif flags:find("f", 1) then
-    io.stdout:write(warna.format(arg[1]))
-elseif flags:find("a", 1) then
-    text = table.remove(arg, 1)
-    io.stdout:write(warna.apply(text, { table.concat(arg, " ") }))
+    if flags == "" or flags:find("b", 1) then
+        text = flags ~= "" and table.remove(arg, 1) or text
+        io.stdout:write(warna.format(warna.apply(text, { table.concat(arg, " ") })))
+    elseif flags:find("f", 1) then
+        io.stdout:write(warna.format(arg[1]))
+    elseif flags:find("a", 1) then
+        text = table.remove(arg, 1)
+        io.stdout:write(warna.apply(text, { table.concat(arg, " ") }))
+    end
 end

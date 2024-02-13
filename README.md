@@ -57,10 +57,10 @@ Copy `warna.lua` from repository tree to the path where Lua can find and require
 
 All fields in `attributes` are documented in the [list of attributes](#list-of-attributes) section.
 
-### `windows_enable_vt`
+### `windows_patch_vte`
 
 ```lua
-function windows_enable_vt(skip_registry: boolean): boolean, string
+function windows_patch_vte(skip_registry: boolean): boolean, string
 ```
 
 - Parameters:
@@ -92,7 +92,7 @@ function raw_apply(str: string, attrs: string[]): string
 - Returns:
   - `string`: The applied string.
 
-Apply string with attributes.
+Apply attributes to a string.
 
 ### `apply`
 
@@ -106,7 +106,7 @@ function apply(str: string, attrs: string[]): string
 - Returns:
   - `string`: The applied string.
 
-Similar to [`raw_apply`](#raw_apply), except it resets the escape sequence.
+Similar to [`raw_apply`](#raw_apply), except the string has `reset` attribute appended.
 
 ### `raw_format`
 
@@ -136,23 +136,39 @@ function format(fmt: string): string
 - Returns:
   - `string`: The formatted string.
 
-Similar to [`raw_format`](#raw_format), except it resets the escape sequence.
+Similar to [`raw_format`](#raw_format), except the string has `reset` attribute appended.
+
+### `strip_escapes`
+
+```lua
+function strip_escapes(str: string): string
+```
+
+- Parameters:
+  - `str: string`: String containing `ESC[...m`.
+- Returns:
+  - `string`: Stripped string.
+
+Strip a string containing escape sequences (`ESC[...m`).
 
 ### CLI
 
 You can also run the `warna.lua` as CLI, which acts as a helper for styling text in shell script.
 
 ```
-Usage: warna.lua <flag>
+Usage: warna.lua <flags>
        warna.lua <fmt|text> [<attributes...>]
        warna.lua -b <fmt|text> [<attributes...>]
        warna.lua -f <fmt>
        warna.lua -a <text> [<attributes...>]
 
 Flags: * -h -- Prints the command usage
+       * -r -- Don't skip editing registry when enabling VTE in Windows.
        * -b -- Both format the text and apply attributes to the text (Default if a flag isn't supplied)
        * -f -- Format the text
        * -a -- Apply the text with attributes
+
+<flags> can be stack up as many as you want. e.g `-ar 'My Text' red`.
 
 Accepts NO_COLOR and FORCE_COLOR to manipulate color support.
 ```

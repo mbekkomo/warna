@@ -339,13 +339,24 @@ if pcall(debug.getlocal, 4, 1) then
 else
     local len_arg = #arg
     local text = table.remove(arg, 1) or ""
-    local isflag = text:sub(1, 1) == "-"
-    local help_flag = isflag and text == "-h"
+    local flags = ""
+    if text:sub(1, 1) == "-" and text:find("[bfaw]", 1) then
+        flags = text:sub(2)
+    else
+        io.stderr:write(("Error: Unknown flag '-%s'\n"):format(text:match("[^-bfaw]")))
+        os.exit(1)
+    end
 
+    if flags ~= "" and #arg == 0 then
+        io.stderr:write("Error: Cannot process a flag, at least supply an input!\n")
+        os.exit(1)
+    end
+
+    local help_flag = flags:find("h", 1)
     if help_flag or len_arg == 0 then
         local prog = arg[0]:gsub(".-/", "")
         print(([[
-Usage: %s <flag>
+Usage: %s <flags>
        %s <fmt|text> [<attributes...>]
        %s -b <fmt|text> [<attributes...>]
        %s -f <fmt>
@@ -356,22 +367,19 @@ Flags: * -h -- Prints the command usage
        * -f -- Format the text
        * -a -- Apply the text with attributes
 
-Accepts NO_COLOR and FORCE_COLOR to manipulate color support.]]):format(prog, prog, prog, prog, prog))
+Accepts NO_COLOR and FORCE_COLOR to manipulate color support.]]):gsub("%%s", prog))
         os.exit(help_flag and 0 or 1)
     end
 
-    warna.windows_enable_vt()
+    warna.windows_enable_vt(flags:find("w", 1) ~= nil)
 
-    if not isflag or isflag and text == "-b" then
-        text = isflag and table.remove(arg, 1) or text
+    if flags == "" or flags:find("b", 1) then
+        text = flags ~= "" and table.remove(arg, 1) or text
         io.stdout:write(warna.format(warna.apply(text, { table.concat(arg, " ") })))
-    elseif isflag and text == "-f" then
+    elseif flags:find("f", 1) then
         io.stdout:write(warna.format(arg[1]))
-    elseif isflag and text == "-a" then
+    elseif flags:find("a", 1) then
         text = table.remove(arg, 1)
         io.stdout:write(warna.apply(text, { table.concat(arg, " ") }))
-    else
-        io.stderr:write(("Error: Unknown flag '%s'\n"):format(text))
-        os.exit(1)
     end
 end

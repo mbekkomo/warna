@@ -16,6 +16,7 @@ if on_windows then
         local output = fd:read("*a"):gsub("^%s+", ""):gsub("%s+$", "")
         _, ver = output:match("(%[Version (.+)%])$")
         winver, buildver = ver:match("^(%d+%.%d+)%.(%d+)")
+        winver = tonumber(winver)
         fd:close()
     end
 end
@@ -69,7 +70,7 @@ local function detect_colors()
 
     if term == "dumb" then return min end
 
-    if on_windows and tonumber(winver) >= 10 and buildver > "10586" then return buildver >= "14931" and 3 or 2 end
+    if on_windows and winver >= 10 and buildver > "10586" then return buildver >= "14931" and 3 or 2 end
 
     if os.getenv("CI") then
         if os.getenv("GITHUB_ACTIONS") or os.getenv("GITEA_ACTIONS") then return 3 end
@@ -145,10 +146,12 @@ warna.options = {
     ---
     --- Specifies the level of color support.
     ---  * `-1` — Disable escape sequences completely.
-    ---  * `0`  — Disable color support
-    ---  * `1`  — Basic color support (8-16 colors)
-    ---  * `2`  — 256 colors support
-    ---  * `3`  — Truecolor support (16 million colors)
+    ---  * `0`  — Disable color support.
+    ---  * `1`  — Basic color support (8-16 colors).
+    ---  * `2`  — 256 colors support.
+    ---  * `3`  — Truecolor support (16 million colors).
+    ---
+    --- Can be overridden by NO_COLOR and FORCE_COLOR.
     ---
     level = detect_colors(),
 }
@@ -260,7 +263,8 @@ end
 --- Format a string with format attributes.
 ---
 function warna.raw_format(fmt)
-    return (fmt:gsub("(%%{(.-)})", function(_, s)
+    return (fmt:gsub("(%%?%%{(.-)})", function(f, s)
+        if f:sub(1, 2) == "%%" then return end
         return attributes_to_escsequence(s)
     end))
 end
@@ -297,7 +301,7 @@ end
 function warna.windows_patch_vte(skip_registry)
     if not on_windows then return false, "not windows" end
 
-    if (tonumber(winver) >= 10 and not buildver >= "14393") or tonumber(winver) < 10 then
+    if (winver >= 10 and not buildver >= "14393") or winver < 10 then
         return execute_cmd((os.getenv("ANSICON") or "ansicon") .. " -p 2>1 1>NUL") == 0, "ansicon method"
     end
 

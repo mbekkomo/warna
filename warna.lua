@@ -301,7 +301,7 @@ end
 function warna.windows_patch_vte(skip_registry)
     if not on_windows then return false, "not windows" end
 
-    if (winver >= 10 and not buildver >= "14393") or winver < 10 then
+    if (winver >= 10 and buildver < "14393") or winver < 10 then
         return execute_cmd((os.getenv("ANSICON") or "ansicon") .. " -p 2>1 1>NUL") == 0, "ansicon method"
     end
 

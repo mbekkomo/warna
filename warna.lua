@@ -50,21 +50,21 @@ end
 local function detect_colors()
     local term = os.getenv("TERM")
     local colorterm = os.getenv("COLORTERM")
-    local force_color = os.getenv("FORCE_COLOR")
 
     ---@cast term string
     ---@cast colorterm string
 
     local min = 0
 
+    local no_color = os.getenv("NO_COLOR")
+    if no_color and no_color ~= "" then return 0 end
+
+    local force_color = os.getenv("FORCE_COLOR")
     if force_color and force_color ~= "" then
         local level = tonumber(force_color)
 
         return level and math.min(3, level) or 1
     end
-
-    local no_color = os.getenv("NO_COLOR")
-    if no_color and no_color ~= "" then return 0 end
 
     if os.getenv("TF_BUILD") and os.getenv("AGENT_NAME") then return 1 end
 

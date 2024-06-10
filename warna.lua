@@ -312,7 +312,8 @@ function warna.windows_patch_vte(skip_registry)
             return true, "registry method"
         end
 
-        io.stderr:write("This script will attempt to edit Registry to enable SGR, allow? [Yy/n...]")
+        io.stderr:write("This script will attempt to edit Registry to enable SGR, allow? [Yy/n...] ")
+        io.stderr:flush()
         local yn = io.read(1)
 
         return yn:lower() == "y" and execute_cmd(

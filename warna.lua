@@ -263,10 +263,12 @@ end
 --- Format a string with format attributes.
 ---
 function warna.raw_format(fmt)
-    return (fmt:gsub("(%%?%%{(.-)})", function(f, s)
-        if f:sub(1, 2) == "%%" then return end
-        return attributes_to_escsequence(s)
-    end))
+    return (
+        fmt:gsub("(%%?%%{(.-)})", function(f, s)
+            if f:sub(1, 2) == "%%" then return end
+            return attributes_to_escsequence(s)
+        end)
+    )
 end
 
 ---@param fmt string
@@ -312,7 +314,8 @@ function warna.windows_patch_vte(skip_registry)
             return true, "registry method"
         end
 
-        io.stderr:write("This script will attempt to edit Registry to enable SGR, allow? [Yy/n...]")
+        io.stderr:write("This script will attempt to edit Registry to enable SGR, allow? [Yy/n...] ")
+        io.stderr:flush()
         local yn = io.read(1)
 
         return yn:lower() == "y" and execute_cmd(

@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-function warna.lua
-{
+function warna.lua {
   [[ -f ../warna.lua ]] && lua ../warna.lua "$@"
   [[ -f ./warna.lua ]] && lua ./warna.lua "$@"
 }

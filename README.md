@@ -1,4 +1,4 @@
-# Warna 
+# Warna
 
 [![GitHub License](https://img.shields.io/github/license/komothecat/warna?style=for-the-badge)](./LICENSE) [![GitHub Release](https://img.shields.io/github/v/release/komothecat/warna?display_name=release&style=for-the-badge&color=green)](https://github.com/komothecat/warna/releases/latest)<br>
 ![Lua](https://img.shields.io/badge/Lua-5.1_--_5.4%2C_LuaJIT-blue?style=for-the-badge&logo=lua&logoColor=lua)
@@ -6,6 +6,9 @@
 
 
 🎨 Terminal text styling library for Lua
+
+> The name of this library is based on a word "warna", which means color in Indonesian language.
+> Why did I choose this? Cuz I'm an Indonesian language :P
 
 ## Installation
 

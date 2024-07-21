@@ -3,9 +3,6 @@
 local warna = {}
 
 local ffi_ok, ffi = pcall(require, "ffi")
-if not ffi_ok and ffi then
-    ffi_ok, ffi = pcall(require, "cffi")
-end
 
 local on_windows = (not ffi_ok and package.config:sub(1, 1) == "\\") or (ffi_ok and ffi.os == "Windows")
 
@@ -60,6 +57,9 @@ local function detect_colors()
     if no_color and no_color ~= "" then return 0 end
 
     local force_color = os.getenv("FORCE_COLOR")
+
+    if not (on_windows and force_color) and execute_cmd("[ -t 1 ]") ~= 0 then return -1 end
+
     if force_color and force_color ~= "" then
         local level = tonumber(force_color)
 
@@ -325,7 +325,7 @@ function warna.windows_patch_vte(skip_registry)
     end
 
     -- stylua: ignore
-    ffi.cdef[[
+    ffi.cdef [[
     /* borrowed from https://github.com/malkia/luajit-winapi */
 
     typedef uintptr_t UINT_PTR;

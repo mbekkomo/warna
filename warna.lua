@@ -254,7 +254,7 @@ end
 --- Similar to `warna.raw_apply`, except the string has `reset` attribute appended.
 ---
 function warna.apply(str, attrs)
-    return warna.raw_apply(str, attrs) .. "\27[m"
+    return warna.raw_apply(str, attrs) .. (warna.options.level < 0 and "" or "\27[0m")
 end
 
 ---@param fmt string
@@ -277,7 +277,7 @@ end
 --- Similar to `warna.raw_format`, except the string has `reset` attribute appended.
 ---
 function warna.format(fmt)
-    return warna.raw_format(fmt) .. "\27[m"
+    return warna.raw_format(fmt) .. (warna.options.level < 0 and "" or "\27[0m")
 end
 
 ---@param str any

@@ -182,7 +182,7 @@ The format specifier is similar to [`ansicolors.lua`](https://github.com/kikito/
 The following text uses LPEG's [re](https://www.inf.puc-rio.br/~roberto/lpeg/re.html) expression to specify the format syntax.
 ```
 format <- ('%{' / '%%{') %s* attributes? %s* '}'
-attributes <- attribute (' ' attribute)*
+attributes <- attribute (' '^+1 attribute)*
 attribute <- [a-zA-Z-]+ (':' [^,; ]^-0 ((',' / ';') [^,; ]^-0)*)?
 ```
 

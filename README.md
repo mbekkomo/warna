@@ -183,7 +183,7 @@ The following text uses LPEG's [re](https://www.inf.puc-rio.br/~roberto/lpeg/re.
 ```
 format <- ('%{' / '%%{') %s* attributes? %s* '}'
 attributes <- attribute (' ' attribute)*
-attribute <- [a-zA-Z-] (':' [^,; ]^-0 ((',' / ';') [^,; ]^-0)*)?
+attribute <- [a-zA-Z-]+ (':' [^,; ]^-0 ((',' / ';') [^,; ]^-0)*)?
 ```
 
 ### List of attributes

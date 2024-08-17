@@ -178,20 +178,12 @@ Accepts NO_COLOR and FORCE_COLOR to manipulate color support.
 
 ## Attributes
 
-### Format specifier
-
 The format specifier is similar to [`ansicolors.lua`](https://github.com/kikito/ansicolors.lua).
+The following text uses LPEG's [re](https://www.inf.puc-rio.br/~roberto/lpeg/re.html) expression to specify the format syntax.
 ```
-%{ [<attributes>] }
-```
-
-You can escape the format by adding another `%` before the format.
-
-### Attribute syntax
-
-The syntax of an attribute looks like this.
-```
-<specifier>[:<arg>[<(,|;)arg...>]]
+format <- ('%{' / '%%{') %s* attributes? %s* '}'
+attributes <- attribute (' ' attribute)*
+attribute <- [a-zA-Z-] (':' [^,; ]^-0 ((',' / ';') [^,; ]^-0)*)?
 ```
 
 ### List of attributes

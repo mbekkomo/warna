@@ -6,6 +6,7 @@
 
 /warna-*.rockspec
 !/warna-dev-1.rockspec
+!/warna-tl-dev-1.rockspec
 /*.rock
 
 /out

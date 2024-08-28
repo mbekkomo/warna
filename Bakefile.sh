@@ -24,10 +24,16 @@ task.genrelease() {
   esac
 
   ./luarocks lint ./warna-dev-1.rockspec
+  ./luarocks lint ./warna-tl-dev-1.rockspec
 
   rockspec="$(< ./warna-dev-1.rockspec)"
   rockspec="${rockspec//local _version/local _version = \"$version_next\"}"
   echo "$rockspec" > "warna-$version_next.rockspec"
+
+  mkdir -p out
+  rockspec="$(< ./warna-tl-dev-1.rockspec)"
+  rockspec="${rockspec//local _version/local _version = \"$version_next\"}"
+  echo "$rockspec" > "out/warna-$version_next.rockspec"
 
   git tag -a "v$version_next" -m "Release: v$version_next"
 

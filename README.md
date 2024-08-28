@@ -18,10 +18,14 @@ Run the following command to install Warna.
 ```bash
 $ luarocks install warna
 ```
+You might also wanted to install the types definition if you're using Teal.
+```bash
+$ luarocks install warna-tl
+```
 
 ### Manual
 
-Copy `warna.lua` from repository tree to the path where Lua can find and require it.
+Copy `warna.lua` (and `warna.d.tl` if you're also using Teal) from repository tree to the path where Lua can find and require it.
 
 ## Usage
 

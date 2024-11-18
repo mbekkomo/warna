@@ -83,6 +83,8 @@ If not fallbacks to editing registry.
 
 For Windows 10 before build 14393 (Anniversary update) or before Windows 10, requires [ANSICON](https://github.com/adoxa/ansicon) to patch.
 
+Not required if it's running on Command Prompt (not the `cmd.exe`), Powershell terminal, or Windows Terminal.
+
 ### `raw_apply`
 
 > [!NOTE]
@@ -90,12 +92,12 @@ For Windows 10 before build 14393 (Anniversary update) or before Windows 10, req
 > This function does not resets it's escape sequence, implying it's a "raw" function.
 
 ```lua
-function raw_apply(str: string, attrs: string[]): string
+function raw_apply(str: string, attrs: []string): string
 ```
 
 - Parameters:
   - `str: string`: String to be applied with attributes.
-  - `attrs: string[]` List of attributes. Follows the syntax of an [attribute](#attribute-syntax).
+  - `attrs: []string` List of attributes. Follows the syntax of an [attribute](#attribute-syntax).
 - Returns:
   - `string`: The applied string.
 
@@ -104,12 +106,12 @@ Apply attributes to a string.
 ### `apply`
 
 ```lua
-function apply(str: string, attrs: string[]): string
+function apply(str: string, attrs: []string): string
 ```
 
 - Parameters:
   - `str: string`: String to be applied with attributes.
-  - `attrs: string[]` List of attributes. Follows the syntax of an [attribute](#attribute-syntax).
+  - `attrs: []string` List of attributes. Follows the syntax of an [attribute](#attribute-syntax).
 - Returns:
   - `string`: The applied string.
 
